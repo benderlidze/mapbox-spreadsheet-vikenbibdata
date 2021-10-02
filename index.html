@@ -353,14 +353,18 @@
                 'type': 'symbol',
                 'source': 'pins',
                 'layout': {
-                    'text-field': ['get', 'bygningsnavn'],
+                    'text-field': ['get', 'title'],
                     'text-variable-anchor': ['bottom'],
-                    'text-radial-offset': 0.5,
+                    'text-radial-offset': 1.2,
                     'text-justify': 'auto',
                 },
-                "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
+                'paint': {
+                    'text-color': '#808080'
+                },
+                // "filter": ["==", ['get', 'title'], "NULL"] //hide all labels on init 
             });
 
+            /*
             map.addLayer({
                 'id': 'selected',
                 'type': 'circle',
@@ -383,8 +387,30 @@
                     'circle-opacity': 1
                 }
             });
+            */
 
+            map.addLayer({
+                'id': 'pins-stroke',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 10,
+                    "circle-opacity": 0,
+                    "circle-stroke-width": 2,
+                    "circle-stroke-color": '#F39717',
+                }
+            });
 
+            map.addLayer({
+                'id': 'pins-layer',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 5,
+                    'circle-stroke-width': 0,
+                    'circle-color': '#F39717',
+                }
+            });
 
             map.on('mouseenter', 'pins', mouseEnter);
             map.on('mouseleave', 'pins', mouseLeave);
