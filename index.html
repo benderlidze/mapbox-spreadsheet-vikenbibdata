@@ -348,6 +348,7 @@
                 }
             });
 
+            
             map.addLayer({
                 'id': 'labels',
                 'type': 'symbol',
@@ -412,10 +413,10 @@
                 }
             });
 
-            map.on('mouseenter', 'pins', mouseEnter);
-            map.on('mouseleave', 'pins', mouseLeave);
+            map.on('mouseenter', 'pins-layer', mouseEnter);
+            map.on('mouseleave', 'pins-layer', mouseLeave);
 
-            map.on('click', 'pins', function (e) {
+            map.on('click', 'pins-layer', function (e) {
                 var coordinates = e.features[0].geometry.coordinates.slice();
                 var data = e.features[0].properties;
 
