@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Helvetica Neue, Arial, Helvetica, sans-serif;
+        }
+
+        h3 {
+            padding: 0;
+            margin: 0;
+            color: #2f2f2f;
+            display: block;
+            font-weight: bold;
+            font: 20px Helvetica Neue, Arial, Helvetica, sans-serif;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 140px;
+            left: 140px;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: Arial, sans-serif;
+            overflow-y: overlay;
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.5);
+            height: 550px;
+            width: 350px;
+            display: none;
+        }
+
+        #title {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: #2f2f2f;
+
+        }
+
+        #legend {
+            position: absolute;
+            top: 45px;
+            left: 10px;
+        }
+
+        #menuIcon {
+            position: absolute;
+            top: 45px;
+            left: 10px;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto;
+        }
+
+        .grid-item {
+            /* background-color: rgba(255, 255, 255, 0.8); */
+            border: 0px solid rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .imgbtn {
+            padding: 0px;
+            margin: 1px;
+            width: 100px;
+            height: 100px;
+            background-position: center;
+            /* Center the image */
+            background-repeat: no-repeat;
+            /* Do not repeat the image */
+            background-size: cover;
+            cursor: pointer;
+            filter: grayscale(100%);
+            background-color: transparent;
+        }
+
+
+        .selected {
+
+            filter: grayscale(0%)
+        }
+
+        #logo {
+            position: absolute;
+            z-index: 1000;
+            bottom: 0px;
+            right: 0px;
+            padding: 20px;
+        }
+
+        #logo img {
+            width: 300px;
+        }
+
+        /* .mapboxgl-popup-content {
+            max-height: 600px !important;
+            overflow-y: auto;
+            width: 400px;
+        } */
+
+        @media screen and (max-width: 992px) {
+            .imgbtn {
+                width: 73px;
+                height: 73px;
+            }
+
+            #legend {
+                position: absolute;
+                top: 45px;
+                left: 10px;
+            }
+
+            .mapboxgl-popup-content {
+                max-height: 600px !important;
+                overflow-y: auto;
+                width: 300px !important;
+            }
+
+            .mapboxgl-popup {
+                z-index: 1000
+            }
+
+            #logo img {
+                width: 200px;
+            }
+        }
+
+
+
+
+        /*the container must be positioned relative:*/
+        .autocomplete {
+            position: absolute;
+            display: inline-block;
+            top: 20px;
+            left: 20px;
+        }
+
+        input {
+            border: 1px solid transparent;
+            background-color: #f1f1f1;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        input[type=text] {
+            background-color: #f1f1f1;
+            width: 100%;
+        }
+
+        input[type=submit] {
+            background-color: DodgerBlue;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            /*position the autocomplete items to be the same width as the container:*/
+            top: 100%;
+            left: 0;
+            right: 0;
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        /*when hovering an item:*/
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        /*when navigating through the items using the arrow keys:*/
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+
+        #menu {
+            background: #fff;
+            position: absolute;
+            z-index: 1;
+            top: 10px;
+            right: 10px;
+            border-radius: 3px;
+            width: 120px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        #menu a {
+            font-size: 13px;
+            color: #404040;
+            display: block;
+            margin: 0;
+            padding: 0;
+            padding: 10px;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        #menu a:last-child {
+            border: none;
+        }
+
+        #menu a:hover {
+            background-color: #f8f8f8;
+            color: #404040;
+        }
+
+        #menu a.active {
+            background-color: #3887be;
+            color: #ffffff;
+        }
+
+        #menu a.active:hover {
+            background: #3074a4;
+        }
+    </style>
+</head>
+
+<body>
+    <nav id="menu"></nav>
+    <div id="map"></div>
+    <div class="autocomplete" style="width:300px;display: none;">
+        <input id="myInput" type="text" name="myCountry" placeholder="Søk...">
+    </div>
+    <!-- <div id="logo">
+        <img src="img/Conveyor_white_300px.png" alt="">
+    </div> -->
+
+
+
+    <script>
+
+        const mainData = [];
+        const colors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"];
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZXNtYXAiLCJhIjoiY2pwYmZkM2ExMDM3eDNrbzk3dWJ0ZmFjbyJ9.Dy8uEjj0Y-1HLE6fEZsKdA';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v9',
+            center: { lng: 10.624899914020716, lat: 59.9117845249873 },
+            zoom: 6
+        });
+
+        map.on('load', () => {
+
+
+
+
+            map.addSource('big', {
+                'type': 'geojson',
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
+            });
+            map.addLayer({
+                'id': 'Kommuner',
+                'type': 'fill',
+                'source': 'big', // reference the data source
+                'layout': {
+                    // Make the layer visible by default.
+                    'visibility': 'visible'
+                },
+                'paint': {
+                    'fill-color': ['get', 'color'],
+                    'fill-opacity': 0.3
+                }
+            });
+
+            map.addSource('small', {
+                type: 'geojson',
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
+            });
+            map.addLayer({
+                'id': 'Fylker',
+                'type': 'fill',
+                'source': 'small', // reference the data source
+                'layout': {
+                    // Make the layer visible by default.
+                    'visibility': 'visible'
+                },
+                'paint': {
+                    'fill-color': ['get', 'color'],
+                    'fill-opacity': 0.3
+                }
+            });
+
+            /*
+            fetch('data/1.json').then(i => i.json()).then(i => {
+                i.features.forEach(e => {
+                    e.properties.color = colors[Math.floor(Math.random() * colors.length)];
+                });
+                console.log('i', i);
+                map.getSource('big').setData(i)
+            })
+            fetch('data/2.json').then(i => i.json()).then(i => {
+                i.features.forEach(e => {
+                    e.properties.color = colors[Math.floor(Math.random() * colors.length)];
+                });
+                console.log('i', i);
+                map.getSource('small').setData(i)
+            })
+            */
+
+            map.addSource('pins', {
+                'type': 'geojson',
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
+            });
+
+            map.addLayer({
+                'id': 'labels',
+                'type': 'symbol',
+                'source': 'pins',
+                'layout': {
+                    'text-field': ['get', 'bygningsnavn'],
+                    'text-variable-anchor': ['bottom'],
+                    'text-radial-offset': 0.5,
+                    'text-justify': 'auto',
+                },
+                "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
+            });
+
+            map.addLayer({
+                'id': 'selected',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 8,
+                    'circle-color': 'blue',
+                    'circle-opacity': 1
+                },
+                "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
+            });
+
+            map.addLayer({
+                'id': 'pins',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 5,
+                    'circle-color': 'red',
+                    'circle-opacity': 1
+                }
+            });
+
+
+
+            map.on('mouseenter', 'pins', mouseEnter);
+            map.on('mouseleave', 'pins', mouseLeave);
+
+            map.on('click', 'pins', function (e) {
+                var coordinates = e.features[0].geometry.coordinates.slice();
+                var data = e.features[0].properties;
+
+                let img = '';
+                if (data.thumbnail !== "") {
+                    img = `<div><img src="${data.thumbnail}" style="width:200px;"></div>`;
+                }
+                const title = data['title'];
+                const description = `
+                    <h1>${title}</h1>
+                    ${img}
+                    <div>
+                        <a href="${data.matterport}" target="_blank">matterport</a>
+                    </div>
+                    <div>
+                        <a href="${data.grafana}" target="_blank">grafana</a>
+                    </div>
+                `;
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(description)
+                    .addTo(map);
+            });
+
+            d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTKsO9JkadrfeeItnSuXRAIjio4IW8Ehou_u1KXKbVxFX3xJkekg_7vzhJGBXKAeHzb2Lgr97g_-8Lc/pub?output=csv")
+                .then(data => {
+                    showPins(data);
+                })
+        })
+
+
+
+        /*
+        map.on('idle', function () {
+            // If these two layers have been added to the style,
+            // add the toggle buttons.
+            if (map.getLayer('Kommuner') && map.getLayer('Fylker')) {
+                // Enumerate ids of the layers.
+                var toggleableLayerIds = ['Kommuner', 'Fylker'];
+                // Set up the corresponding toggle button for each layer.
+                for (var i = 0; i < toggleableLayerIds.length; i++) {
+                    var id = toggleableLayerIds[i];
+                    if (!document.getElementById(id)) {
+                        // Create a link.
+                        var link = document.createElement('a');
+                        link.id = id;
+                        link.href = '#';
+                        link.textContent = id;
+                        link.className = 'active';
+                        // Show or hide layer when the toggle is clicked.
+                        link.onclick = function (e) {
+                            var clickedLayer = this.textContent;
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            var visibility = map.getLayoutProperty(
+                                clickedLayer,
+                                'visibility'
+                            );
+
+                            // Toggle layer visibility by changing the layout object's visibility property.
+                            if (visibility === 'visible') {
+                                map.setLayoutProperty(
+                                    clickedLayer,
+                                    'visibility',
+                                    'none'
+                                );
+                                this.className = '';
+                            } else {
+                                this.className = 'active';
+                                map.setLayoutProperty(
+                                    clickedLayer,
+                                    'visibility',
+                                    'visible'
+                                );
+                            }
+                        };
+
+                        var layers = document.getElementById('menu');
+                        layers.appendChild(link);
+                    }
+                }
+            }
+        });
+        */
+
+        function mouseEnter() {
+            map.getCanvas().style.cursor = 'pointer';
+        }
+        function mouseLeave() {
+            map.getCanvas().style.cursor = '';
+        }
+
+        function showPins(data) {
+
+            collection = data.map(d => {
+                mainData.push(d)
+                return {
+                    "type": "Feature",
+                    "geometry": { "type": "Point", "coordinates": [+d['longitude'], +d['latitude']] },
+                    "properties": {
+                        ...d
+                    },
+                }
+            })
+            console.log('collection', collection);
+            map.getSource('pins').setData({ type: "FeatureCollection", features: collection })
+            autocomplete(document.getElementById("myInput"), mainData);
+        }
+
+
+
+
+        function autocomplete(inp, data) {
+            /*the autocomplete function takes two arguments,
+            the text field element and an array of possible autocompleted values:*/
+            var currentFocus;
+            /*execute a function when someone writes in the text field:*/
+            inp.addEventListener("input", function (e) {
+                var a, b, i, val = this.value;
+                /*close any already open lists of autocompleted values*/
+                closeAllLists();
+                if (!val) { return false; }
+                currentFocus = -1;
+                /*create a DIV element that will contain the items (values):*/
+                a = document.createElement("DIV");
+                a.setAttribute("id", this.id + "autocomplete-list");
+                a.setAttribute("class", "autocomplete-items");
+                /*append the DIV element as a child of the autocomplete container:*/
+                this.parentNode.appendChild(a);
+
+
+                const arr = data.map(i => i.bygningsnavn)
+                let counter = 0;
+
+                /*for each item in the array...*/
+                for (i = 0; i < arr.length; i++) {
+
+                    /*check if the item starts with the same letters as the text field value:*/
+                    if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                        /*create a DIV element for each matching element:*/
+                        b = document.createElement("DIV");
+                        /*make the matching letters bold:*/
+                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(val.length);
+                        /*insert a input field that will hold the current array item's value:*/
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        /*execute a function when someone clicks on the item value (DIV element):*/
+                        b.addEventListener("click", function (e) {
+                            /*insert the value for the autocomplete text field:*/
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            /*close the list of autocompleted values,
+                            (or any other open lists of autocompleted values:*/
+                            closeAllLists();
+
+                            console.log('inp.value', inp.value);
+
+                            const point = data.find(i => i.bygningsnavn === inp.value);
+                            if (point) {
+                                map.flyTo({
+                                    center: [+point.lon, +point.lat],
+                                    zoom: 13
+                                })
+
+                                map.setFilter('labels', [
+                                    'match',
+                                    ['get', 'bygningsnavn'],
+                                    inp.value,
+                                    true,
+                                    false
+                                ])
+                                map.setFilter('selected', [
+                                    'match',
+                                    ['get', 'bygningsnavn'],
+                                    inp.value,
+                                    true,
+                                    false
+                                ])
+
+                                map.once("idle", () => {
+                                    console.log('done');
+                                    var mapBounds = map.getBounds()
+                                    const query = map.queryRenderedFeatures([map.project(mapBounds.getSouthWest()), map.project(mapBounds.getNorthEast())], { layers: ['pins'] });
+
+                                    const names = [...new Set(query.map(i => i.properties.bygningsnavn))]
+
+                                    console.log('names', names);
+                                    map.setFilter('labels', [
+                                        'match',
+                                        ['get', 'bygningsnavn'],
+                                        names,
+                                        true,
+                                        false
+                                    ])
+                                })
+                            }
+
+                        });
+                        if (counter > 20) return; // display forst 20 results
+                        a.appendChild(b);
+                        counter++;
+                    }
+                }
+            });
+            /*execute a function presses a key on the keyboard:*/
+            inp.addEventListener("keydown", function (e) {
+                var x = document.getElementById(this.id + "autocomplete-list");
+                if (x) x = x.getElementsByTagName("div");
+                if (e.keyCode == 40) {
+                    /*If the arrow DOWN key is pressed,
+                    increase the currentFocus variable:*/
+                    currentFocus++;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 38) { //up
+                    /*If the arrow UP key is pressed,
+                    decrease the currentFocus variable:*/
+                    currentFocus--;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 13) {
+                    /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        /*and simulate a click on the "active" item:*/
+                        if (x) x[currentFocus].click();
+                    }
+                }
+            });
+            function addActive(x) {
+                /*a function to classify an item as "active":*/
+                if (!x) return false;
+                /*start by removing the "active" class on all items:*/
+                removeActive(x);
+                if (currentFocus >= x.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (x.length - 1);
+                /*add class "autocomplete-active":*/
+                x[currentFocus].classList.add("autocomplete-active");
+
+                console.log('x', x);
+            }
+            function removeActive(x) {
+                /*a function to remove the "active" class from all autocomplete items:*/
+                for (var i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                }
+            }
+            function closeAllLists(elmnt) {
+                /*close all autocomplete lists in the document,
+                except the one passed as an argument:*/
+                var x = document.getElementsByClassName("autocomplete-items");
+                for (var i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                        x[i].parentNode.removeChild(x[i]);
+                    }
+                }
+            }
+            /*execute a function when someone clicks in the document:*/
+            document.addEventListener("click", function (e) {
+                closeAllLists(e.target);
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html>
