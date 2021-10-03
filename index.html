@@ -268,10 +268,10 @@
         const mainData = [];
         const colors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"];
 
-        mapboxgl.accessToken = 'pk.eyJ1IjoiZXNtYXAiLCJhIjoiY2pwYmZkM2ExMDM3eDNrbzk3dWJ0ZmFjbyJ9.Dy8uEjj0Y-1HLE6fEZsKdA';
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/dark-v9',
+            style: 'mapbox://styles/serserser/ckuaugvm87giy17s991bipkj1',
             center: { lng: 10.624899914020716, lat: 59.9117845249873 },
             zoom: 6
         });
@@ -353,6 +353,7 @@
                 'id': 'labels',
                 'type': 'symbol',
                 'source': 'pins',
+                "minzoom": 8, // Set zoom level to whatever suits your needs
                 'layout': {
                     'text-field': ['get', 'title'],
                     'text-variable-anchor': ['bottom'],
@@ -360,7 +361,7 @@
                     'text-justify': 'auto',
                 },
                 'paint': {
-                    'text-color': '#808080'
+                    'text-color': 'black'
                 },
                 // "filter": ["==", ['get', 'title'], "NULL"] //hide all labels on init 
             });
@@ -390,26 +391,26 @@
             });
             */
 
-            map.addLayer({
-                'id': 'pins-stroke',
-                'type': 'circle',
-                'source': 'pins',
-                'paint': {
-                    'circle-radius': 10,
-                    "circle-opacity": 0,
-                    "circle-stroke-width": 2,
-                    "circle-stroke-color": '#F39717',
-                }
-            });
+            // map.addLayer({
+            //     'id': 'pins-stroke',
+            //     'type': 'circle',
+            //     'source': 'pins',
+            //     'paint': {
+            //         'circle-radius': 10,
+            //         "circle-opacity": 0,
+            //         "circle-stroke-width": 2,
+            //         "circle-stroke-color": '#F39717',
+            //     }
+            // });
 
             map.addLayer({
                 'id': 'pins-layer',
                 'type': 'circle',
                 'source': 'pins',
                 'paint': {
-                    'circle-radius': 5,
+                    'circle-radius': 7,
                     'circle-stroke-width': 0,
-                    'circle-color': '#F39717',
+                    'circle-color': 'red',
                 }
             });
 
