@@ -9,6 +9,8 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
+    <script src="https://cdn.rawgit.com/abdmob/x2js/master/xml2json.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -248,11 +250,66 @@
         #menu a.active:hover {
             background: #3074a4;
         }
+
+
+        .sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            right: 0;
+            background-color: white;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .sidenav a {
+            padding: 5px;
+            text-decoration: none;
+            
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        @media screen and (max-height: 450px) {
+            .sidenav {
+                padding-top: 15px;
+            }
+
+            .sidenav a {
+                font-size: 18px;
+            }
+        }
+
+        #info {
+            padding: 20px;
+        }
     </style>
 </head>
 
 <body>
-    <nav id="menu"></nav>
+
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <div id="info"></div>
+    </div>
+
+    <!-- <nav id="menu"></nav> -->
     <div id="map"></div>
     <div class="autocomplete" style="width:300px;display: none;">
         <input id="myInput" type="text" name="myCountry" placeholder="Søk...">
@@ -265,6 +322,7 @@
 
     <script>
 
+        const info = document.getElementById("info")
         const mainData = [];
         const colors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"];
 
@@ -276,10 +334,18 @@
             zoom: 6
         });
 
+        fetch('http://www.nb.no/baser/bibliotek/eksport/bb-full.xml')
+            .then(response => response.text())
+            .then(data => {
+                var x2js = new X2JS();
+                const s = x2js.parseXmlString(data)
+                var jsonObj = x2js.xml_str2json(data);
+
+                console.log('jsonObj', jsonObj);
+            });
+
+
         map.on('load', () => {
-
-
-
 
             map.addSource('big', {
                 'type': 'geojson',
@@ -348,7 +414,7 @@
                 }
             });
 
-            
+
             map.addLayer({
                 'id': 'labels',
                 'type': 'symbol',
@@ -430,10 +496,10 @@
                     <h1>${title}</h1>
                     ${img}
                     <div>
-                        <a href="${data.matterport}" target="_blank">matterport</a>
+                        <a href="${data.matterport}" target="_blank">Se ${title} i 3D</a>
                     </div>
                     <div>
-                        <a href="${data.grafana}" target="_blank">grafana</a>
+                        <a href="${data.grafana}" target="_blank">Se statistikk for ${title}</a>
                     </div>
                 `;
                 // Ensure that if the map is zoomed out such that multiple
@@ -443,10 +509,13 @@
                     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                 }
 
-                new mapboxgl.Popup()
-                    .setLngLat(coordinates)
-                    .setHTML(description)
-                    .addTo(map);
+                // new mapboxgl.Popup()
+                //     .setLngLat(coordinates)
+                //     .setHTML(description)
+                //     .addTo(map);
+
+                openNav()
+                info.innerHTML = description;
             });
 
             d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTKsO9JkadrfeeItnSuXRAIjio4IW8Ehou_u1KXKbVxFX3xJkekg_7vzhJGBXKAeHzb2Lgr97g_-8Lc/pub?output=csv")
@@ -510,6 +579,14 @@
             }
         });
         */
+
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "300px";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+        }
 
         function mouseEnter() {
             map.getCanvas().style.cursor = 'pointer';
